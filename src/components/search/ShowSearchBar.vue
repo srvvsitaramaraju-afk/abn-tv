@@ -7,7 +7,6 @@ const q = ref<string>('')
 
 const store = useShowStore()
 
-// Debounce network calls to reduce API usage while typing
 const { debounced: debouncedSearch, cancel } = useDebounce(
   (value: string) => {
     store.showSearch(value)

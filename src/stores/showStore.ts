@@ -77,7 +77,6 @@ export const useShowStore = defineStore('shows', {
             const episodesBySeason: Record<number, Episode[]> = {}
 
             for (const episode of allEpisodes) {
-                // Handle season being number OR string
                 const seasonRaw = episode.season
                 let seasonNum: number | null = null
 
@@ -91,14 +90,12 @@ export const useShowStore = defineStore('shows', {
                     if (!episodesBySeason[seasonNum]) {
                         episodesBySeason[seasonNum] = []
                     }
-                    episodesBySeason[seasonNum].push(episode)
+                    episodesBySeason[seasonNum]!.push(episode)
                 }
             }
 
-            // Sort episodes in each season by episode number
-            for (const seasonKey of Object.keys(episodesBySeason)) {
-                const season = Number(seasonKey)
-                episodesBySeason[season]!.sort((a, b) => {
+            for (const seasonNum in episodesBySeason) {
+                episodesBySeason[Number(seasonNum)]!.sort((a, b) => {
                     const numA = typeof a.number === 'number' ? a.number : 9999
                     const numB = typeof b.number === 'number' ? b.number : 9999
                     return numA - numB
@@ -107,13 +104,13 @@ export const useShowStore = defineStore('shows', {
 
             return episodesBySeason
         },
+
     },
 
     actions: {
         async loadShowIndexPages(pages: number[] = [0, 1, 2]) {
             this.isLoading = true
             this.error = null
-
             try {
                 for (const page of pages) {
                     if (this.loadedIndexPages.includes(page)) continue

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CastMember } from '@/types/shows';
+import type { CastMember } from '@/types/show';
 import CastTitle from './CastTitle.vue';
 
 defineProps<{

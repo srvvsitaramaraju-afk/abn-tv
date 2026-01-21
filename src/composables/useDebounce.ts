@@ -1,6 +1,6 @@
 import { ref, onUnmounted } from 'vue';
 
-export function useDebounce<T extends (...args: unknown[]) => void>(
+export function useDebounce<T extends (...args: any[]) => void>(
   fn: T,
   wait = 450
 ) {

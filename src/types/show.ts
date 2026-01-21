@@ -18,6 +18,7 @@ export interface Show {
   status?: string | null;
   premiered?: string | null;
   officialSite?: string | null;
+  runtime?:number
 }
 
 export interface SearchResultItem {
@@ -25,8 +26,9 @@ export interface SearchResultItem {
   show: Show;
 }
 
+
 export interface Episode {
-  id: number | null;
+  id: number;
   name: string;
   season: number | null;
   number: number | null;
@@ -35,6 +37,7 @@ export interface Episode {
   runtime?: number | null;
   summary?: string | null;
   image?: Image | null;
+  rating?:Rating
 }
 
 export interface Person {

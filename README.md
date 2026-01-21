@@ -14,7 +14,7 @@ Built with **Vue 3**, **Vite**, **Pinia**, **Vue Router** and **TypeScript**.
 
 ```bash
 # 1. Clone the repository
-git clone https://your-repo-url/abn-tv.git
+git clone https://github.com/srvvsitaramaraju-afk/abn-tv.git
 cd abn-tv
 
 # 2. Install dependencies
@@ -31,3 +31,6 @@ npm run test:unit
 
 # 6. Generate coverage report
 npm run coverage
+
+#7 . Type issues
+npm run type-check

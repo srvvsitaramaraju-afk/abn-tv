@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Show } from '@/types/shows';
+import type { Show } from '@/types/show';
 import ShowCard from './ShowCard.vue';
 
 defineProps<{

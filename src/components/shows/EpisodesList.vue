@@ -22,7 +22,9 @@ const seasons = computed(() =>
 
 watch(() => props.episodesBySeason, () => {
   if (seasons.value.length > 0 && selectedSeason.value === null) {
+    if(seasons.value[0]){
     selectedSeason.value = seasons.value[0]
+    }
   }
 }, { immediate: true })
 
@@ -103,6 +105,7 @@ const currentEpisodes = computed(() =>
                 </h4>
                 <div v-if="ep.rating?.average" class="badge bg-warning text-dark small">
                   ★ {{ ep.rating.average.toFixed(1) }}
+                  {{ ep.rating }}
                 </div>
               </div>
 

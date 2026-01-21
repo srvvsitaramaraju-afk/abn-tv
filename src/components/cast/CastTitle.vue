@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
-import type { CastMember } from '@/types/shows'
+import type { CastMember } from '@/types/show'
 
 const props = defineProps<{
   cast: CastMember
