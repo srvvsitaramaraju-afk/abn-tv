@@ -91,7 +91,7 @@ describe('EpisodesList', () => {
     const propsWithTwoSeasons = {
       episodesBySeason: { 
         2: mockEpisodes,
-        1: [{ id: 3, name: 'S1E1', season: 1, number: 1 }]
+        1: [{ id: 3, name: 'E1', season: 1, number: 1 }]
       },
       isLoading: false,
       error: null
@@ -114,7 +114,7 @@ describe('EpisodesList', () => {
     expect(episodeTile.exists()).toBe(true)
     
     expect(wrapper.find('img[src="episode1.jpg"]').exists()).toBe(true)
-    expect(wrapper.find('.h6').text()).toContain('S1E1 · Pilot')
+    expect(wrapper.find('.h6').text()).toContain('E1 · Pilot')
     expect(wrapper.find('.small').text()).toContain('2020-01-01 · 45 min')
   })
 
@@ -146,7 +146,7 @@ describe('EpisodesList', () => {
       props: { episodesBySeason: { 1: incompleteEpisodes }, isLoading: false, error: null } 
     })
     
-    expect(wrapper.find('.h6').text()).toContain('S1E– · Untitled')
+    expect(wrapper.find('.h6').text()).toContain('E– · Untitled')
   })
 
   it('displays summary with HTML stripped and line-clamp', () => {
