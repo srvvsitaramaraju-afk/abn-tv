@@ -29,12 +29,6 @@ function clearSearch() {
 <template>
   <div class="mb-3">
     <div class="d-flex align-items-end justify-content-between mb-3">
-      <!-- <label
-        for="showSearch"
-        class="form-label fw-semibold mb-1"
-      >
-        Search shows
-      </label> -->
 
       <button
         v-if="q"

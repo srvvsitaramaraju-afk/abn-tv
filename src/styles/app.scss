@@ -77,8 +77,17 @@ a {
 
 .btn-tv{
     background-color: #00a296;
+    color: white;
     &:hover{
-      background-color: #00a296;  
+      background-color: #00a296; 
+      color: white; 
+    }
+}
+.btn-tv-yellow{
+      background-color: #f3c00091;
+    color: white;
+    &:hover{
+       background-color: #f3c00091;  
     }
 }
 header,footer {

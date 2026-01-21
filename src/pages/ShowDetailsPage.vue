@@ -46,7 +46,7 @@ const episodesBySeason = computed(() => store.episodesBySeason(id))
   <section class="container py-5">
     <RouterLink 
       to="/" 
-      class="btn btn-sm btn-outline-light mb-4 d-inline-flex align-items-center gap-2"
+      class="btn btn-sm btn-tv mb-4 d-inline-flex align-items-center gap-2"
     >
       ← Back to Home
     </RouterLink>
@@ -95,7 +95,7 @@ const episodesBySeason = computed(() => store.episodesBySeason(id))
             :href="show.officialSite"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn btn-outline-light btn-sm"
+            class="btn btn-tv-yellow btn-sm"
           >
             Official Site ↗
           </a>
