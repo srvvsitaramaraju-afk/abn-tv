@@ -57,26 +57,6 @@ function clearSearch() {
       role="status"
       aria-live="polite"
     >
-      <span
-        v-if="store.isShowSearchLoading"
-        class="text-secondary"
-      >
-        Searching...
-      </span>
-
-      <span
-        v-else-if="store.showSearchError"
-        class="text-danger"
-      >
-        Error: {{ store.showSearchError }}
-      </span>
-
-      <span
-        v-else-if="store.showSearchQuery && !store.showSearchResults.length"
-        class="text-muted"
-      >
-        No results found.
-      </span>
     </div>
   </div>
 </template>

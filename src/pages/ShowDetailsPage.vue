@@ -75,7 +75,7 @@ const episodesBySeason = computed(() => store.episodesBySeason(id))
           />
           <div
             v-else
-            class="ratio ratio-2x3 bg-dark d-flex align-items-center justify-content-center text-muted"
+            class="ratio ratio-2x3 bg-dark d-flex align-items-center justify-content-center"
           >
             No Image
           </div>

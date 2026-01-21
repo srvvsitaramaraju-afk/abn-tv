@@ -2,69 +2,57 @@
 import { onMounted, computed } from 'vue'
 import { useShowStore } from '@/stores/showStore'
 
-import ShowSearchBar from '@/components/search/ShowSearchBar.vue'
 import GenreRow from '@/components/shows/GenreRow.vue'
 import ShowCard from '@/components/shows/ShowCard.vue'
 
 const store = useShowStore()
 
-onMounted(() => {
-  // Preload the first few genre/index pages
-  store.loadShowIndexPages([0, 1, 2])
+onMounted(async () => {
+  await store.loadShowIndexPages([0, 1, 2, 4, 5])
 })
 
 const showsGroupedByGenre = computed(() => store.showsGroupedByGenre)
-
 const hasQuery = computed(() => !!store.showSearchQuery)
-
 const searchResults = computed(() => store.showSearchResults)
 </script>
 
 <template>
-  <section>
-    <ShowSearchBar />
+  <section class="py-6">
+    <!-- Search bar now lives in App.vue (above) -->
 
-    <!-- Search mode -->
     <div v-if="hasQuery">
-      <h2 class="h6 text-uppercase text-muted mb-2">Results</h2>
-
-      <div v-if="store.isShowSearchLoading" class="text-secondary">
+      <h2 class="h3 mb-4 fw-bold text-uppercase">Search Results</h2>
+      <div v-if="store.isShowSearchLoading" class="text-center py-8">
         Searching...
       </div>
-      <div
-        v-else-if="store.showSearchError"
-        class="alert alert-danger"
-      >
-        Error: {{ store.showSearchError }}
+      <div v-else-if="store.showSearchError" class="text-center py-8 text-danger">
+        Please Try after SomeTime
       </div>
-      <div v-else>
-        <div class="horizontal-scroll">
-          <ShowCard
-            v-for="s in searchResults"
-            :key="s.id"
-            :show="s"
-          />
-        </div>
+      <div v-else-if="searchResults.length === 0" class="text-center py-8">
+        No results found.
+      </div>
+      <div v-else class="horizontal-scroll">
+        <ShowCard
+          v-for="show in searchResults"
+          :key="show.id"
+          :show="show"
+        />
       </div>
     </div>
 
-    <!-- Genre rows (default view when no search query) -->
     <div v-else>
-      <div v-if="store.isLoading" class="text-secondary">
+      <div v-if="store.isLoading" class="text-center py-10">
         Loading shows...
       </div>
-      <div
-        v-else-if="store.error"
-        class="alert alert-danger"
-      >
+      <div v-else-if="store.error" class="text-center py-10 text-danger">
         Error: {{ store.error }}
       </div>
       <div v-else>
         <GenreRow
-          v-for="(list, genre) in showsGroupedByGenre"
+          v-for="(shows, genre) in showsGroupedByGenre"
           :key="genre"
           :genreName="genre"
-          :shows="list"
+          :shows="shows"
         />
       </div>
     </div>
@@ -72,7 +60,6 @@ const searchResults = computed(() => store.showSearchResults)
 </template>
 
 <style scoped>
-
 .horizontal-scroll {
   display: flex;
   overflow-x: auto;
