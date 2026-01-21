@@ -105,7 +105,6 @@ const currentEpisodes = computed(() =>
                 </h4>
                 <div v-if="ep.rating?.average" class="badge bg-warning text-dark small">
                   ★ {{ ep.rating.average.toFixed(1) }}
-                  {{ ep.rating }}
                 </div>
               </div>
 
