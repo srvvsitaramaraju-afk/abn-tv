@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
+import { useRoute, RouterLink, useRouter } from 'vue-router'
 import { useShowStore } from '@/stores/showStore'
 import CastStrip from '@/components/cast/CastStrip.vue'
 import EpisodesList from '@/components/shows/EpisodesList.vue'
 import {useSanitize } from '@/composables/useSanitize'
 
 const route = useRoute()
+const router = useRouter()
 const store = useShowStore()
 
 const id = Number(route.params.id)
@@ -40,16 +41,18 @@ const castList = computed(() => store.castByShowId[id] ?? [])
 
 
 const episodesBySeason = computed(() => store.episodesBySeason(id))
+const goBack = () => router.back()
 </script>
 
 <template>
-  <section class="container py-5">
-    <RouterLink 
-      to="/" 
+  <section class="container">
+  <button 
+      @click="goBack"
       class="btn btn-sm btn-tv mb-4 d-inline-flex align-items-center gap-2"
+      type="button"
     >
-      ← Back to Home
-    </RouterLink>
+      ← Back
+    </button>
 
     <div v-if="loading" class="text-center py-5">
       <div class="spinner-border text-light" role="status"></div>

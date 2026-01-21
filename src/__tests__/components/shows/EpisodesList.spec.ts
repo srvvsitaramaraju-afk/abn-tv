@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import EpisodesList from '../../../components/shows/EpisodesList.vue'
-import type { Episode, Rating } from '../../../types/show'
+import type { Episode } from '../../../types/show'
 
 const mockEpisodes: Episode[] = [
   {

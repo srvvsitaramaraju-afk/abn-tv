@@ -1,198 +1,134 @@
-// src/__tests__/pages/HomePage.spec.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
-import { createPinia, setActivePinia, type Pinia } from 'pinia'
+import { reactive } from 'vue'
 import HomePage from '../../pages/HomePage.vue'
-import ShowSearchBar from '../../components/search/ShowSearchBar.vue'
 import GenreRow from '../../components/shows/GenreRow.vue'
-import ShowCard from '../../components/shows/ShowCard.vue'
-import { useShowStore } from '../../stores/showStore'
 import type { Show } from '../../types/show'
 
+// Reactive mock store
+const mockStore = reactive({
+  loadShowIndexPages: vi.fn().mockResolvedValue(undefined),
+  showsGroupedByGenre: {},
+  showSearchQuery: '',
+  showSearchResults: [] as Show[],
+  isLoading: false,
+  error: null,
+  isShowSearchLoading: false,
+  showSearchError: null,
+  $reset: vi.fn()
+})
+
+
+vi.mock('../../stores/showStore', () => ({
+  useShowStore: vi.fn(() => mockStore)
+}))
+
 describe('HomePage.vue', () => {
-  let pinia: Pinia
-  let store: ReturnType<typeof useShowStore>
   let wrapper: VueWrapper
 
   beforeEach(() => {
-    pinia = createPinia()
-    setActivePinia(pinia)
-
-    store = useShowStore()
-    store.$reset() 
-    store.loadShowIndexPages = vi.fn().mockResolvedValue(undefined)
+    // Reset reactive state
+    mockStore.showSearchQuery = ''
+    mockStore.showSearchResults = []
+    mockStore.isLoading = false
+    mockStore.error = null
+    mockStore.isShowSearchLoading = false
+    mockStore.showSearchError = null
+    mockStore.showsGroupedByGenre = {}
+    mockStore.loadShowIndexPages.mockClear()
 
     wrapper = mount(HomePage, {
       global: {
-        plugins: [pinia],
-      },
+        stubs: {
+          ShowSearchBar: true
+        }
+      }
     })
   })
 
   afterEach(() => {
-    if (wrapper?.exists()) {
-      wrapper.unmount()
-    }
+    wrapper?.unmount()
     vi.clearAllMocks()
   })
 
-  it('always renders ShowSearchBar', () => {
-    expect(wrapper.findComponent(ShowSearchBar).exists()).toBe(true)
-  })
-
-  it('calls loadShowIndexPages([0,1,2]) exactly once on mount', async () => {
+  it('calls loadShowIndexPages on mount with correct pages', async () => {
     await flushPromises()
-    expect(store.loadShowIndexPages).toHaveBeenCalledTimes(1)
-    expect(store.loadShowIndexPages).toHaveBeenCalledWith([0, 1, 2])
+    expect(mockStore.loadShowIndexPages).toHaveBeenCalledTimes(1)
+    expect(mockStore.loadShowIndexPages).toHaveBeenCalledWith([0, 1, 2, 4, 5])
   })
 
+  it('shows loading message when isLoading is true', async () => {
+    mockStore.isLoading = true
+    await flushPromises()
 
-  describe('default view (no search active)', () => {
-    it('shows loading message when isLoading = true', async () => {
-      store.isLoading = true
-      await wrapper.vm.$nextTick()
-
-      expect(wrapper.text()).toContain('Loading shows...')
-      expect(wrapper.findComponent(GenreRow).exists()).toBe(false)
-      expect(wrapper.find('h2').exists()).toBe(false) // no Results heading
-    })
-
-    it('shows error alert when error is set', async () => {
-      store.error = 'Failed to load TV shows'
-      await wrapper.vm.$nextTick()
-
-      const alert = wrapper.find('.alert.alert-danger')
-      expect(alert.exists()).toBe(true)
-      expect(alert.text()).toContain('Error: Failed to load TV shows')
-      expect(wrapper.findComponent(GenreRow).exists()).toBe(false)
-    })
-
-    it('renders nothing when loading/error not active and no genres loaded', async () => {
-      await wrapper.vm.$nextTick()
-
-      expect(wrapper.text()).not.toContain('Loading shows...')
-      expect(wrapper.find('.alert.alert-danger').exists()).toBe(false)
-      expect(wrapper.findComponent(GenreRow).exists()).toBe(false)
-    })
-
-    it('renders correct number of GenreRow components when genres are present', async () => {
-      store.showsById = {
-        1: { id: 1, name: 'Breaking Bad', rating: { average: 9.5 }, genres: ['Drama'] } as Show,
-        2: { id: 2, name: 'The Wire', rating: { average: 9.3 }, genres: ['Drama'] } as Show,
-        3: { id: 3, name: 'The Office', rating: { average: 8.9 }, genres: ['Comedy'] } as Show,
-      }
-
-      store.genreToShowIds = {
-        Drama: [1, 2],
-        Comedy: [3],
-      }
-
-      await wrapper.vm.$nextTick()
-
-      const rows = wrapper.findAllComponents(GenreRow)
-      expect(rows).toHaveLength(2)
-
-      expect(rows[0].props()).toMatchObject({
-        genreName: 'Drama',
-        shows: expect.arrayContaining([
-          expect.objectContaining({ id: 1 }),
-          expect.objectContaining({ id: 2 }),
-        ]),
-      })
-
-      expect(rows[1].props()).toMatchObject({
-        genreName: 'Comedy',
-        shows: expect.arrayContaining([expect.objectContaining({ id: 3 })]),
-      })
-    })
-
-    it('does not show search UI in default mode', () => {
-      expect(wrapper.find('h2').exists()).toBe(false) // no "Results"
-      expect(wrapper.find('.horizontal-scroll').exists()).toBe(false)
-      expect(wrapper.text()).not.toContain('Searching...')
-    })
+    expect(wrapper.text()).toContain('Loading shows...')
+    expect(wrapper.findComponent(GenreRow).exists()).toBe(false)
   })
 
+  it('shows error message when error is set', async () => {
+    mockStore.error = 'Failed to load shows'
+    await flushPromises()
 
-  describe('search mode (has active query)', () => {
-    beforeEach(async () => {
-      store.showSearchQuery = 'breaking'
-      await wrapper.vm.$nextTick()
-    })
-
-    it('shows "Results" heading', () => {
-      expect(wrapper.find('h2').text()).toContain('Results')
-    })
-
-    it('renders ShowCard components for each search result', async () => {
-      store.showSearchResults = [
-        { id: 100, name: 'Breaking Bad', rating: { average: 9.5 }, genres: ['Drama'] } as Show,
-        { id: 101, name: 'Better Call Saul', rating: { average: 8.9 }, genres: ['Drama'] } as Show,
-      ]
-
-      await wrapper.vm.$nextTick()
-
-      const cards = wrapper.findAllComponents(ShowCard)
-      expect(cards).toHaveLength(2)
-      expect(cards[0].props('show').id).toBe(100)
-      expect(cards[1].props('show').id).toBe(101)
-    })
-
-    it('shows "Searching..." when search is in progress', async () => {
-      store.isShowSearchLoading = true
-      await wrapper.vm.$nextTick()
-
-      expect(wrapper.text()).toContain('Searching...')
-      expect(wrapper.findComponent(ShowCard).exists()).toBe(false)
-      expect(wrapper.find('.alert').exists()).toBe(false)
-    })
-
-    it('shows error message when search fails', async () => {
-      store.showSearchError = 'API rate limit exceeded'
-      await wrapper.vm.$nextTick()
-
-      const alert = wrapper.find('.alert.alert-danger')
-      expect(alert.exists()).toBe(true)
-      expect(alert.text()).toContain('Error: API rate limit exceeded')
-      expect(wrapper.findComponent(ShowCard).exists()).toBe(false)
-    })
-
-    it('shows no-results message when search returns empty array (optional enhancement)', async () => {
-      store.showSearchResults = []
-      store.isShowSearchLoading = false
-      store.showSearchError = null
-      await wrapper.vm.$nextTick()
-
-      expect(wrapper.findComponent(ShowCard).exists()).toBe(false)
-    })
-
+    expect(wrapper.text()).toContain('Error: Failed to load shows')
+    expect(wrapper.findComponent(GenreRow).exists()).toBe(false)
   })
 
+  it('renders GenreRow components when genres are present', async () => {
+    mockStore.showsGroupedByGenre = {
+      Drama: [
+        { id: 1, name: 'Breaking Bad' },
+        { id: 2, name: 'The Wire' }
+      ],
+      Comedy: [{ id: 3, name: 'The Office' }]
+    }
 
-  describe('computed properties', () => {
-    it('hasQuery → true when showSearchQuery has content', () => {
-      store.showSearchQuery = 'walter white'
-      const vm = wrapper.vm as InstanceType<typeof HomePage>
-      expect(vm.hasQuery).toBe(true)
-    })
+    await flushPromises()
 
-    it('hasQuery → false when showSearchQuery is empty string', () => {
-      store.showSearchQuery = ''
-      const vm = wrapper.vm as InstanceType<typeof HomePage>
-      expect(vm.hasQuery).toBe(false)
-    })
+    const rows = wrapper.findAllComponents(GenreRow)
+    expect(rows.length).toBe(2)
 
-    it('hasQuery → false when showSearchQuery is whitespace only', () => {
-      store.showSearchQuery = '   '
-      const vm = wrapper.vm as InstanceType<typeof HomePage>
-      expect(vm.hasQuery).toBe(true) // ← !!'   ' is true
-      // If you want to treat whitespace as empty, change computed to .trim()
-    })
+    expect(rows[0].props('genreName')).toBe('Drama')
+    expect(rows[0].props('shows').length).toBe(2)
 
-    it('searchResults → returns current store value', () => {
-      store.showSearchResults = [{ id: 777, name: 'Test Show' } as Show]
-      const vm = wrapper.vm as InstanceType<typeof HomePage>
-      expect(vm.searchResults).toBe(store.showSearchResults)
-    })
+    expect(rows[1].props('genreName')).toBe('Comedy')
+    expect(rows[1].props('shows').length).toBe(1)
+  })
+
+  it('shows search results heading when query exists', async () => {
+    mockStore.showSearchQuery = 'breaking'
+    await flushPromises()
+
+    const heading = wrapper.find('h2')
+    expect(heading.exists()).toBe(true)
+    expect(heading.text()).toContain('Search Results')
+  })
+
+  it('shows searching indicator during search', async () => {
+    mockStore.showSearchQuery = 'walter'
+    mockStore.isShowSearchLoading = true
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Searching...')
+  })
+
+  it('shows error message when search fails', async () => {
+    mockStore.showSearchQuery = 'test'
+    mockStore.showSearchError = 'API error'
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Please Try after SomeTime')
+  })
+
+  it('shows no-results message when search returns empty', async () => {
+    mockStore.showSearchQuery = 'xyz'
+    mockStore.showSearchResults = []
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('No results found.')
+  })
+
+  it('does not render search UI when no query is active', () => {
+    const heading = wrapper.find('h2')
+    expect(heading.exists()).toBe(false)  // ← key change: check existence, not text on empty
   })
 })

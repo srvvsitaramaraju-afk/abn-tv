@@ -54,11 +54,11 @@ describe('ShowDetail.vue', () => {
     vi.clearAllMocks()
   })
 
-  it('renders back to home link', () => {
-    const backLink = wrapper.findComponent({ name: 'RouterLink' })
-    expect(backLink.exists()).toBe(true)
-    expect(backLink.text()).toContain('← Back to Home')
-  })
+it('renders back button', () => {
+  const backButton = wrapper.get('button.btn-tv')
+  expect(backButton.exists()).toBe(true)
+  expect(backButton.text()).toContain('← Back')
+})
 
   it('calls store methods on mount', async () => {
     await nextTick()
