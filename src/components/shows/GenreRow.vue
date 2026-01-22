@@ -21,7 +21,9 @@ async function goToGenre() {
 
   router.push({
     name: 'genre',
-    params: { genre: props.genreName }
+    params: { 
+      genre: encodeURIComponent(props.genreName) 
+    }
   })
 }
 </script>

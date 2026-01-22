@@ -9,10 +9,8 @@ const store = useShowStore()
 
 const genreName = computed(() => route.params.genre as string)
 
-// 1. Regular genre shows (no search)
 const genreShows = computed(() => store.showsForGenre(genreName.value))
 
-// 2. Search results FILTERED by current genre
 const genreFilteredSearchResults = computed(() => {
   if (!store.showSearchQuery || !store.showSearchResults.length) return []
   
@@ -33,6 +31,7 @@ const nextPage = computed(() => {
 
 onMounted(async () => {
   await store.searchAndAddToGenre(genreName.value)
+  
   if (genreShows.value.length <= 10) {
     await store.loadShowIndexPages([nextPage.value])
   }
@@ -46,7 +45,6 @@ async function loadMoreShows() {
 
 <template>
   <div class="container">
-    <!-- SEARCH RESULTS (filtered by genre) -->
     <div v-if="hasQuery && store.showSearchResults.length > 0">
       <h1 class="mb-4 fw-bold">
         "{{ store.showSearchQuery }}" in {{ genreName }}
@@ -67,9 +65,18 @@ async function loadMoreShows() {
           <ShowCard :show="show" />
         </div>
       </div>
+
+      <div v-if="hasMore && !store.isShowSearchLoading" class="text-center mt-4">
+        <button
+          @click="loadMoreShows"
+          class="btn btn-tv btn-sm px-3 py-1"
+          :disabled="store.isLoading"
+        >
+          {{ store.isLoading ? 'Loading...' : 'Load More' }}
+        </button>
+      </div>
     </div>
 
-    <!-- ALL GENRE SHOWS (no search) -->
     <div v-else>
       <h1 class="mb-4 fw-bold">
         {{ genreName }} Shows
@@ -88,6 +95,18 @@ async function loadMoreShows() {
       <div v-else class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-4">
         <div class="col" v-for="show in genreShows" :key="show.id">
           <ShowCard :show="show" />
+        </div>
+      </div>
+      <div v-if="hasMore" class="text-center mt-4">
+        <button
+          v-if="!store.isLoading"
+          @click="loadMoreShows"
+          class="btn btn-tv btn-sm px-3 py-1"
+        >
+          Load More
+        </button>
+        <div v-else class="text-center py-3">
+          Loading more...
         </div>
       </div>
     </div>

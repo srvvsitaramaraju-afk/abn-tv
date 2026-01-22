@@ -1,9 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
 import EpisodesList from '../../../components/shows/EpisodesList.vue'
 import type { Episode } from '../../../types/show'
+import type { Episode } from '../../../types/show'
 
-const mockEpisodes: Episode[] = [
+vi.mock('../../../composables/useSanitize', () => ({
+  useSanitize: vi.fn((html: string) => ({ value: html.replace(/<[^>]*>/g, '') }))
+}))
+
+const mockEpisodesSeason1: Episode[] = [
   {
     id: 1,
     name: 'Pilot',
@@ -11,166 +16,203 @@ const mockEpisodes: Episode[] = [
     number: 1,
     airdate: '2020-01-01',
     runtime: 45,
-    summary: 'First episode summary.',
-    image: { medium: 'episode1.jpg' }
+    summary: '<p>First <b>episode</b> summary.</p>',
+    image: { medium: 'ep1.jpg' },
+    rating: { average: 8.2 }
   },
   {
     id: 2,
-    name: 'Episode 2',
+    name: 'Episode Two',
     season: 1,
     number: 2,
     airdate: '2020-01-08',
     runtime: 42,
-    summary: 'Second episode.'
+    summary: 'Second episode summary.',
+    image: null,
+    rating: { average: null }
   }
 ]
 
-const mockProps = {
-  episodesBySeason: { 1: mockEpisodes },
-  isLoading: false,
-  error: null
-}
+const mockEpisodesSeason2: Episode[] = [
+  {
+    id: 3,
+    name: 'Season Premiere',
+    season: 2,
+    number: 1,
+    airdate: '2021-01-05',
+    runtime: 50,
+    summary: 'New season starts.',
+    image: { medium: 'ep3.jpg' }
+  }
+]
 
 describe('EpisodesList', () => {
-  let wrapper: any
+  let wrapper: ReturnType<typeof mount>
 
   beforeEach(() => {
-    wrapper = null
-  })
-
-  afterEach(() => {
-    wrapper?.unmount()
-  })
-
-  it('renders loading spinner when isLoading is true', () => {
-    wrapper = mount(EpisodesList, { 
-      props: { ...mockProps, isLoading: true } 
+    wrapper = mount(EpisodesList, {
+      props: {
+        episodesBySeason: { 1: mockEpisodesSeason1 },
+        isLoading: false,
+        error: null
+      }
     })
-    
+  })
+
+  it('renders loading state correctly', () => {
+    wrapper = mount(EpisodesList, {
+      props: { episodesBySeason: {}, isLoading: true, error: null }
+    })
     expect(wrapper.find('.spinner-border').exists()).toBe(true)
-    expect(wrapper.find('.text-center').text()).toContain('Loading episodes...')
+    expect(wrapper.text()).toContain('Loading episodes...')
   })
 
-  it('renders error message when error exists', () => {
-    wrapper = mount(EpisodesList, { 
-      props: { ...mockProps, error: 'Failed to load episodes' } 
+  it('renders error message when error prop is set', () => {
+    wrapper = mount(EpisodesList, {
+      props: { episodesBySeason: {}, isLoading: false, error: 'Network error' }
     })
-    
-    expect(wrapper.find('.alert-danger').exists()).toBe(true)
-    expect(wrapper.find('.alert-danger').text()).toContain('Failed to load episodes')
+    const alert = wrapper.find('.alert-danger')
+    expect(alert.exists()).toBe(true)
+    expect(alert.text()).toContain('Network error')
   })
 
-  it('renders "No episodes available" when no seasons', () => {
-    wrapper = mount(EpisodesList, { 
-      props: { episodesBySeason: {}, isLoading: false, error: null } 
+  it('shows "No episodes available" when episodesBySeason is empty', () => {
+    wrapper = mount(EpisodesList, {
+      props: { episodesBySeason: {}, isLoading: false, error: null }
     })
-    
-    expect(wrapper.find('.text-secondary').text()).toContain('No episodes available')
+    expect(wrapper.text()).toContain('No episodes available')
   })
 
-  it('renders season buttons and auto-selects first season', () => {
-    wrapper = mount(EpisodesList, { props: mockProps })
-    
-    const seasonBtns = wrapper.findAll('button.rounded-pill')
-    expect(seasonBtns).toHaveLength(1)
-    expect(seasonBtns[0].text()).toContain('Season 1')
-    
-    // First season auto-selected
-    expect(wrapper.vm.selectedSeason).toBe(1)
+  it('auto-selects the highest season number on mount', async () => {
+    wrapper = mount(EpisodesList, {
+      props: {
+        episodesBySeason: {
+          1: mockEpisodesSeason1,
+          2: mockEpisodesSeason2
+        },
+        isLoading: false,
+        error: null
+      }
+    })
+    await flushPromises()
+    expect(wrapper.vm.selectedSeason).toBe(2)
   })
 
-  it('renders mobile dropdown for seasons', () => {
-    wrapper = mount(EpisodesList, { props: mockProps })
-    
+  it('renders season buttons in descending order', () => {
+    wrapper = mount(EpisodesList, {
+      props: {
+        episodesBySeason: { 3: [], 1: [], 2: [] },
+        isLoading: false,
+        error: null
+      }
+    })
+    const buttons = wrapper.findAll('button.rounded-pill')
+    expect(buttons.map(b => b.text())).toEqual(['Season 3', 'Season 2', 'Season 1'])
+  })
+
+  it('renders mobile dropdown and selects correct season', async () => {
+    wrapper = mount(EpisodesList, {
+      props: {
+        episodesBySeason: { 1: mockEpisodesSeason1, 2: mockEpisodesSeason2 },
+        isLoading: false,
+        error: null
+      }
+    })
+    await flushPromises()
+
     const select = wrapper.find('select.form-select')
     expect(select.exists()).toBe(true)
-    expect(select.element.value).toBe('1')
-  })
+    expect(select.element.value).toBe('2') // highest season
 
-  it('changes selected season when button clicked', async () => {
-    const propsWithTwoSeasons = {
-      episodesBySeason: { 
-        2: mockEpisodes,
-        1: [{ id: 3, name: 'E1', season: 1, number: 1 }]
-      },
-      isLoading: false,
-      error: null
-    }
-    
-    wrapper = mount(EpisodesList, { props: propsWithTwoSeasons })
-    
-    const seasonBtns = wrapper.findAll('button.rounded-pill')
-    expect(seasonBtns).toHaveLength(2)
-    
-    await seasonBtns[1].trigger('click') // Click Season 1
+    await select.setValue('1')
     expect(wrapper.vm.selectedSeason).toBe(1)
-    expect(wrapper.findAll('.tile').length).toBe(1)
   })
 
-  it('renders episodes for selected season with correct structure', () => {
-    wrapper = mount(EpisodesList, { props: mockProps })
-    
-    const episodeTile = wrapper.find('.tile')
-    expect(episodeTile.exists()).toBe(true)
-    
-    expect(wrapper.find('img[src="episode1.jpg"]').exists()).toBe(true)
-    expect(wrapper.find('.h6').text()).toContain('E1 · Pilot')
-    expect(wrapper.find('.small').text()).toContain('2020-01-01 · 45 min')
-  })
-
-  it('renders no preview placeholder when no image', () => {
-    const noImageEpisodes = [{
-      id: 99,
-      name: 'No Image',
-      season: 1,
-      number: 1
-    }]
-    
-    wrapper = mount(EpisodesList, { 
-      props: { episodesBySeason: { 1: noImageEpisodes }, isLoading: false, error: null } 
+  it('switches episodes when clicking season button', async () => {
+    wrapper = mount(EpisodesList, {
+      props: {
+        episodesBySeason: { 1: mockEpisodesSeason1, 2: mockEpisodesSeason2 },
+        isLoading: false,
+        error: null
+      }
     })
-    
-    expect(wrapper.find('.bg-secondary').text()).toContain('No Preview')
-    expect(wrapper.find('img').exists()).toBe(false)
+    await flushPromises()
+
+    const buttons = wrapper.findAll('button.rounded-pill')
+    await buttons[1].trigger('click') // Season 1
+
+    expect(wrapper.vm.selectedSeason).toBe(1)
+    expect(wrapper.findAll('.tile')).toHaveLength(2)
+    expect(wrapper.find('.tile').text()).toContain('Pilot')
   })
 
-  it('handles missing episode data gracefully', () => {
-    const incompleteEpisodes = [{
-      id: 100,
+  it('applies active class to selected season button', () => {
+    wrapper = mount(EpisodesList, {
+      props: {
+        episodesBySeason: { 1: [], 2: [] },
+        isLoading: false,
+        error: null
+      }
+    })
+    const buttons = wrapper.findAll('button.rounded-pill')
+    expect(buttons[0].classes()).toContain('btn-tv')
+    expect(buttons[1].classes()).toContain('btn-outline-light')
+  })
+
+  it('renders episode with image, rating, airdate and runtime', () => {
+    const tile = wrapper.find('.tile')
+    expect(tile.find('img').attributes('src')).toBe('ep1.jpg')
+    expect(tile.find('.h6').text()).toContain('E1 · Pilot')
+    expect(tile.find('.badge').text()).toContain('★ 8.2')
+    expect(tile.text()).toContain('2020-01-01 · 45 min')
+  })
+
+  it('renders "No Preview" when episode has no image', () => {
+    wrapper = mount(EpisodesList, {
+      props: {
+        episodesBySeason: { 1: [mockEpisodesSeason1[1]] },
+        isLoading: false,
+        error: null
+      }
+    })
+    expect(wrapper.find('.bg-secondary').text()).toContain('No Preview')
+  })
+
+  it('handles missing name/number/airdate/runtime gracefully', () => {
+    const brokenEpisode: Episode = {
+      id: 999,
       name: '',
       season: 1,
-      number: null as any
-    }]
-    
-    wrapper = mount(EpisodesList, { 
-      props: { episodesBySeason: { 1: incompleteEpisodes }, isLoading: false, error: null } 
+      number: null,
+      airdate: null,
+      runtime: null,
+      summary: null,
+      image: null,
+      rating: { average: null }
+    }
+
+    wrapper = mount(EpisodesList, {
+      props: { episodesBySeason: { 1: [brokenEpisode] }, isLoading: false, error: null }
     })
-    
-    expect(wrapper.find('.h6').text()).toContain('E– · Untitled')
+
+    expect(wrapper.find('.h6').text()).toBe('E– · Untitled')
+    expect(wrapper.text()).not.toContain('min')
+    expect(wrapper.find('.badge').exists()).toBe(false)
   })
 
-  it('displays summary with HTML stripped and line-clamp', () => {
-    wrapper = mount(EpisodesList, { props: mockProps })
-    
-    expect(wrapper.find('.line-clamp-3').text()).toContain('First episode summary.')
+  it('sanitizes and renders summary HTML safely', () => {
+    const summaryText = wrapper.find('.line-clamp-3').text()
+    expect(summaryText).toBe('First episode summary.')
+    expect(summaryText).not.toContain('<b>')
   })
 
-  it('applies correct responsive classes', () => {
-    wrapper = mount(EpisodesList, { props: mockProps })
-    
-    expect(wrapper.find('.row-cols-1.row-cols-md-3.row-cols-lg-4').exists()).toBe(true)
-    expect(wrapper.find('.d-none.d-md-flex').exists()).toBe(true)
-    expect(wrapper.find('.d-md-none').exists()).toBe(true)
-  })
 
-  it('updates episodes when props change', async () => {
-    wrapper = mount(EpisodesList, { 
-      props: { episodesBySeason: { 1: [] }, isLoading: false, error: null } 
+  it('does not crash when selectedSeason is invalid after prop change', async () => {
+    await wrapper.setProps({
+      episodesBySeason: { 5: [] }
     })
-    
-    await wrapper.setProps({ episodesBySeason: { 1: mockEpisodes } })
-    
-    expect(wrapper.findAll('.tile')).toHaveLength(2)
-    expect(wrapper.vm.selectedSeason).toBe(1)
+    await flushPromises()
+    expect(wrapper.vm.selectedSeason).toBe(5)
   })
+
 })

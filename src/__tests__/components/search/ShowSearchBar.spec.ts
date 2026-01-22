@@ -6,7 +6,7 @@ import { useShowStore } from '../../../stores/showStore'
 
 const mockUseDebounce = vi.hoisted(() => vi.fn())
 
-vi.mock('@/composables/useDebounce', () => ({
+vi.mock('../../../composables/useDebounce', () => ({
   useDebounce: mockUseDebounce
 }))
 

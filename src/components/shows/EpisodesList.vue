@@ -19,14 +19,31 @@ const seasons = computed(() =>
     .sort((a, b) => b - a)
 )
 
+watch(
+  () => props.episodesBySeason,
+  (newSeasons) => {
+    const seasonNumbers = Object.keys(newSeasons)
+      .map(Number)
+      .sort((a, b) => b - a); 
 
-watch(() => props.episodesBySeason, () => {
-  if (seasons.value.length > 0 && selectedSeason.value === null) {
-    if(seasons.value[0]){
-    selectedSeason.value = seasons.value[0]
+    if (seasonNumbers.length === 0) {
+      selectedSeason.value = null;
+      return;
     }
-  }
-}, { immediate: true })
+
+    const highestSeason = seasonNumbers[0]!; 
+    if (
+      selectedSeason.value !== null &&
+      newSeasons[selectedSeason.value] !== undefined
+    ) {
+      return;
+    }
+
+    selectedSeason.value = highestSeason;
+  },
+  { immediate: true }
+)
+
 
 const currentEpisodes = computed(() =>
   selectedSeason.value ? props.episodesBySeason[selectedSeason.value] ?? [] : []
