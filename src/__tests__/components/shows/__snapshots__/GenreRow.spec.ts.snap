@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GenreRow > matches snapshot for visual regression 1`] = `
+"<section data-v-1a9e4ff5="" class="mb-4">
+  <div data-v-1a9e4ff5="" class="d-flex align-items-center justify-content-between mb-3 flex-nowrap">
+    <h2 data-v-1a9e4ff5="" class="h2 mb-0 fw-bold flex-grow-1 me-3">Drama</h2><button data-v-1a9e4ff5="" class="btn btn-tv btn-sm px-3 py-1 ms-auto view-more-btn" title="View All"> All → </button>
+  </div>
+  <div data-v-1a9e4ff5="" class="horizontal-scroll">
+    <article data-v-1a9e4ff5="" class="tile card-compact card-hover h-100 bg-dark border-0 position-relative" role="button" tabindex="0" aria-label="Open details for Breaking Bad">
+      <div class="poster-portrait-md d-flex align-items-center justify-content-center" aria-label="No image available"> No Image </div>
+      <div class="rating-badge" aria-label="Rating"> ★ 9.5</div>
+      <div class="tile-overlay">
+        <div class="w-100">
+          <div class="fw-semibold text-truncate mb-1">Breaking Bad</div>
+          <div class="small opacity-75">Drama</div>
+        </div>
+      </div>
+    </article>
+    <article data-v-1a9e4ff5="" class="tile card-compact card-hover h-100 bg-dark border-0 position-relative" role="button" tabindex="0" aria-label="Open details for Better Call Saul">
+      <div class="poster-portrait-md d-flex align-items-center justify-content-center" aria-label="No image available"> No Image </div>
+      <div class="rating-badge" aria-label="Rating"> ★ 9</div>
+      <div class="tile-overlay">
+        <div class="w-100">
+          <div class="fw-semibold text-truncate mb-1">Better Call Saul</div>
+          <div class="small opacity-75">Drama • Crime</div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>"
+`;

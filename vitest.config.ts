@@ -1,4 +1,3 @@
-// vitest.config.ts
 import { fileURLToPath } from 'node:url'
 import { mergeConfig, defineConfig, configDefaults } from 'vitest/config'
 import viteConfig from './vite.config'
@@ -13,6 +12,7 @@ export default mergeConfig(
       coverage: {
         exclude: [
           'src/services/http.ts',
+          'src/composables/useDebounce.ts',
           '**/http.ts',
           '**/*.config.*'
         ]

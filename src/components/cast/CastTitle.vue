@@ -8,15 +8,15 @@ const props = defineProps<{
 const person = props.cast.person
 const character = props.cast.character
 
-const img = person.image?.medium ?? person.image?.original ?? ''
+const castImg = person.image?.medium ?? person.image?.original ?? ''
 </script>
 
 <template>
   <article class="card h-100 bg-dark border-0 card-hover cast-compact">
     <img
-      v-if="img"
+      v-if="castImg"
       class="cast-photo d-flex align-items-center justify-content-center"
-      :src="img"
+      :src="castImg"
       alt=""
     />
 

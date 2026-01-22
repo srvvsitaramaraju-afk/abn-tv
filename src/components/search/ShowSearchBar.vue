@@ -3,7 +3,7 @@ import { ref, watch } from 'vue'
 import { useShowStore } from '@/stores/showStore'
 import { useDebounce } from '@/composables/useDebounce'
 
-const q = ref<string>('')
+const query = ref<string>('')
 
 const store = useShowStore()
 
@@ -14,14 +14,14 @@ const { debounced: debouncedSearch, cancel } = useDebounce(
   450
 )
 
-watch(q, (val) => {
+watch(query, (val) => {
   debouncedSearch(val)
 })
 
 // Clear search (input + store)
 function clearSearch() {
   cancel()
-  q.value = ''
+  query.value = ''
   store.showSearch('')
 }
 </script>
@@ -31,7 +31,7 @@ function clearSearch() {
     <div class="d-flex align-items-end justify-content-between mb-3">
 
       <button
-        v-if="q"
+        v-if="query"
         class="btn btn-sm btn-outline-light"
         type="button"
         @click="clearSearch"
@@ -43,7 +43,7 @@ function clearSearch() {
 
     <input
       id="showSearch"
-      v-model="q"
+      v-model="query"
       class="form-control"
       type="search"
       placeholder="Type a show name..."

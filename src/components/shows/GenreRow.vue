@@ -2,7 +2,6 @@
 import type { Show } from '@/types/show'
 import ShowCard from './ShowCard.vue'
 import { useRouter } from 'vue-router'
-import { useShowStore } from '@/stores/showStore'
 
 const props = defineProps<{
   genreName: string
@@ -10,15 +9,8 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
-const store = useShowStore()
 
 async function goToGenre() {
-  if (props.shows.length <= 4) {
-    try {
-      await store.loadShowIndexPages([0, 1, 2, 3])
-    } catch {}
-  }
-
   router.push({
     name: 'genre',
     params: { 

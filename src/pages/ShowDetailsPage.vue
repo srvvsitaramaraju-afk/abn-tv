@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { useRoute, RouterLink, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useShowStore } from '@/stores/showStore'
 import CastStrip from '@/components/cast/CastStrip.vue'
 import EpisodesList from '@/components/shows/EpisodesList.vue'

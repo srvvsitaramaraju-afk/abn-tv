@@ -7,6 +7,7 @@ import {
 const HomePage = () => import('@/pages/HomePage.vue');
 const ShowDetailPage = () => import('@/pages/ShowDetailsPage.vue');
 const GenreDetailPage = () => import('@/pages/GenreDetail.vue')
+const NotFoundPage = () => import('@/pages/NotFoundPage.vue'); 
 
 const routes: RouteRecordRaw[] = [
   { 
@@ -27,6 +28,11 @@ const routes: RouteRecordRaw[] = [
     name: 'genre',
     component: GenreDetailPage,
     meta: { showSearch: true }
+  },
+  { 
+    path: '/:pathMatch(.*)*', 
+    name: 'not-found', 
+    component: NotFoundPage 
   },
 ];
 
