@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_SHOWS_API_BASE as string,
+  baseURL: import.meta.env.VITE_SHOWS_API_BASE || 'https://api.tvmaze.com',
   timeout: 10000,
 });
 
